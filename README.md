@@ -53,11 +53,3 @@ The `${FLYTE_API_KEY}` reference is stored unexpanded, so Claude Code resolves i
 Server configuration is loaded from [`deploy.yaml`](deploy.yaml) and validated by [`MCPSettings`](src/flyte_mcp/settings.py).
 
 For the supported fields, defaults, and semantics, see the `MCPSettings` docstring in [`src/flyte_mcp/settings.py`](src/flyte_mcp/settings.py). That file is the source of truth for deployment, execution, and discovery configuration, including the `DiscoveryProject` shape used by `discovery_projects`.
-
-## Development
-
-```bash
-make setup          # install dependencies
-make test-unit      # run unit tests
-make run-mcp        # run the stdio server locally
-```
