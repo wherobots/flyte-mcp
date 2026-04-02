@@ -8,10 +8,12 @@ from flyte_mcp.settings import get_settings
 
 PORT = 8000
 APP_NAME = "flyte-mcp"
+SCALE_DOWN_SECONDS = 3600
 
 image = (
     flyte.Image.from_debian_base()
     .with_source_file(Path("deploy.yaml"))
+    .with_dockerignore(Path(".dockerignore"))
     .with_uv_project(
         pyproject_file=Path("pyproject.toml"),
         uvlock=Path("uv.lock"),
@@ -27,7 +29,7 @@ app = AppEnvironment(
     domain=Domain(subdomain=APP_NAME),
     resources=flyte.Resources(cpu=2, memory="4Gi", disk="8Gi"),
     requires_auth=True,
-    scaling=Scaling(replicas=(0, 1)),
+    scaling=Scaling(replicas=(0, 1), scaledown_after=SCALE_DOWN_SECONDS),
     links=[
         Link(
             path="/sdk/mcp",
