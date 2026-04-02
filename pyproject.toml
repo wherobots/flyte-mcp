@@ -51,10 +51,12 @@ markers = [
 plugins = [ "pydantic.mypy" ]
 
 [tool.semantic_release]
-version_toml = [ "pyproject.toml:project.version" ]
+version_toml = [ "pyproject.toml:project.version:nf" ]
 version_variables = [ "src/flyte_mcp/__init__.py:__version__" ]
 
 build_command = """
+curl -LsSf https://astral.sh/uv/install.sh | sh && \
+export PATH=$HOME/.local/bin:$PATH && \
 uv lock && \
 git add uv.lock
 """
