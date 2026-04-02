@@ -1,0 +1,52 @@
+# Copy this file to deploy.yaml (which is gitignored) and fill in your values.
+# Run `make deploy-mcp-app` to deploy.
+
+# ---------------------------------------------------------------------------
+# Platform connection
+# ---------------------------------------------------------------------------
+
+# Your organization slug on the Flyte platform.
+org: <your-org>
+
+# gRPC endpoint for the Flyte platform.
+# Format: dns:///<hostname>
+endpoint: dns:///<your-endpoint>
+
+# ---------------------------------------------------------------------------
+# Deployment scope
+# The Flyte project and domain that "owns" this MCP app environment.
+# ---------------------------------------------------------------------------
+
+deployment_project: <your-project>
+deployment_domain: staging
+
+# ---------------------------------------------------------------------------
+# Execution scope
+# Default project and domain used when launching task runs via the MCP tools.
+# Individual run_task calls can override these per call.
+# ---------------------------------------------------------------------------
+
+execution_project: <your-project>
+execution_domain: staging
+
+# ---------------------------------------------------------------------------
+# Task discovery
+# Controls which projects and versions the MCP server indexes when a client
+# calls discover_tasks or list_project_versions.
+# ---------------------------------------------------------------------------
+
+# List of project/version pairs to discover tasks from.
+# Use "latest" to always resolve the most recently registered version.
+discovery_projects:
+  - project: <your-project>
+    version: latest
+
+# Flyte domain to use when discovering tasks.
+discovery_domain: development
+
+# Maximum number of task rows to scan per project during discovery.
+# Increase if your projects contain large numbers of registered tasks.
+discovery_limit: 512
+
+# Number of tasks to fetch concurrently during discovery.
+discovery_concurrency: 32
