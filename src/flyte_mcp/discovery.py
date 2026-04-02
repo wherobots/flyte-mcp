@@ -275,11 +275,14 @@ async def discover_tasks(
     limit: int | None = None,
     concurrency: int | None = None,
 ) -> tuple[list[DiscoveredTask], list[SkippedTask]]:
-    settings = get_settings()
-    projects = projects or settings.discovery_projects
-    domain = domain or settings.discovery_domain
-    limit = limit or settings.discovery_limit
-    concurrency = concurrency or settings.discovery_concurrency
+    if any(value is None for value in (projects, domain, limit, concurrency)):
+        settings = get_settings()
+        projects = settings.discovery_projects if projects is None else projects
+        domain = settings.discovery_domain if domain is None else domain
+        limit = settings.discovery_limit if limit is None else limit
+        concurrency = (
+            settings.discovery_concurrency if concurrency is None else concurrency
+        )
 
     semaphore = asyncio.Semaphore(concurrency)
     discovered: list[DiscoveredTask] = []

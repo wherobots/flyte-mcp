@@ -5,7 +5,7 @@ SUBDOMAIN = flyte-mcp
 ORG ?= wherobots
 REGION ?= us-west-2
 
-.PHONY: help setup install-pre-commit pre-commit test test-unit test-integration run-mcp deploy-mcp-app clear-flyte-keyring create-test-api-key delete-test-api-key add-claude-mcp remove-claude-mcp add-codex-mcp remove-codex-mcp
+.PHONY: help setup install-pre-commit pre-commit test test-unit test-integration deploy-mcp-app clear-flyte-keyring create-test-api-key delete-test-api-key add-claude-mcp remove-claude-mcp add-codex-mcp remove-codex-mcp
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -30,9 +30,6 @@ test-unit: ## Run unit tests
 
 test-integration: ## Run integration tests
 	uv run pytest tests/integration -q
-
-run-mcp: ## Run the MCP stdio server locally
-	uv run python examples/mcp_server.py
 
 deploy-mcp-app: ## Deploy the Flyte AppEnvironment (image built remotely by the platform)
 	uv run python src/flyte_mcp/app.py
