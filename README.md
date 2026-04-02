@@ -33,6 +33,18 @@ codex mcp add <name> \
 
 Codex reads the bearer token from the named environment variable when it connects.
 
+## Add to OpenCode
+
+Once deployed, register it in OpenCode with your API key:
+
+```bash
+export FLYTE_API_KEY=<your-api-key>
+
+make add-opencode-mcp
+```
+
+This upserts a `flyte-mcp` entry in `~/.config/opencode/opencode.json` that points to the deployed MCP URL and stores the auth header as `Bearer {env:FLYTE_API_KEY}`, so OpenCode resolves the token from your environment at connection time.
+
 ## Add to Claude
 
 Once deployed, register it in Claude Code with your API key:

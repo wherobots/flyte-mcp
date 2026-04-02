@@ -4,8 +4,9 @@ USER ?= $(shell printf '%s' "$$USER")
 SUBDOMAIN = flyte-mcp
 ORG ?= wherobots
 REGION ?= us-west-2
+OPENCODE_CONFIG ?= $(HOME)/.config/opencode/opencode.json
 
-.PHONY: help setup install-pre-commit pre-commit test test-unit test-integration deploy-mcp-app clear-flyte-keyring create-test-api-key delete-test-api-key add-claude-mcp remove-claude-mcp add-codex-mcp remove-codex-mcp
+.PHONY: help setup install-pre-commit pre-commit test test-unit test-integration deploy-mcp-app clear-flyte-keyring create-test-api-key delete-test-api-key add-claude-mcp remove-claude-mcp add-codex-mcp remove-codex-mcp add-opencode-mcp remove-opencode-mcp
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -62,3 +63,18 @@ add-codex-mcp: ## Register the wherobots-rasterflow MCP server in Codex at user 
 
 remove-codex-mcp: ## Remove the wherobots-rasterflow MCP server from Codex
 	codex mcp remove flyte-mcp
+
+add-opencode-mcp: ## Register the Flyte MCP server in OpenCode user config (requires FLYTE_API_KEY)
+	@mkdir -p "$$(dirname "$(OPENCODE_CONFIG)")"
+	@if [ ! -f "$(OPENCODE_CONFIG)" ]; then \
+		printf '%s\n' '{' '  "$$schema": "https://opencode.ai/config.json"' '}' > "$(OPENCODE_CONFIG)"; \
+	fi
+	@tmp="$$(mktemp)"; \
+		jq '.mcp = (.mcp // {}) | .mcp["flyte-mcp"] = {"type":"remote","url":"https://$(SUBDOMAIN).apps.$(ORG).$(REGION).unionai.cloud/sdk/mcp","oauth":false,"headers":{"Authorization":"Bearer {env:FLYTE_API_KEY}"},"enabled":true}' "$(OPENCODE_CONFIG)" > "$$tmp" && mv "$$tmp" "$(OPENCODE_CONFIG)"
+	@printf 'Registered OpenCode MCP "flyte-mcp" in %s\n' "$(OPENCODE_CONFIG)"
+
+remove-opencode-mcp: ## Remove the Flyte MCP server from OpenCode user config
+	@test -f "$(OPENCODE_CONFIG)" || exit 0
+	@tmp="$$(mktemp)"; \
+		jq 'if .mcp then .mcp |= with_entries(select(.key != "flyte-mcp")) else . end | if (.mcp // {}) == {} then del(.mcp) else . end' "$(OPENCODE_CONFIG)" > "$$tmp" && mv "$$tmp" "$(OPENCODE_CONFIG)"
+	@printf 'Removed OpenCode MCP "flyte-mcp" from %s\n' "$(OPENCODE_CONFIG)"
