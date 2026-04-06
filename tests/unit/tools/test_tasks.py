@@ -417,11 +417,12 @@ def test_run_task_executes_and_returns_outputs(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 
     async def fake_run_remote_task(
-        task_obj, *, execution_project, execution_domain, **inputs
+        task_obj, *, execution_project, execution_domain, overwrite_cache=False, **inputs
     ):
         captured["task"] = task_obj
         captured["execution_project"] = execution_project
         captured["execution_domain"] = execution_domain
+        captured["overwrite_cache"] = overwrite_cache
         captured["inputs"] = inputs
         return FakeRun()
 
@@ -472,6 +473,7 @@ def test_run_task_executes_and_returns_outputs(monkeypatch) -> None:
     }
     assert captured["execution_project"] == "my-project"
     assert captured["execution_domain"] == "development"
+    assert captured["overwrite_cache"] is False
     assert isinstance(captured["inputs"]["e"], DataFrame)
     assert isinstance(captured["inputs"]["h"], File)
     assert captured["task"]["lazy_task"]["version"] == "v1"
@@ -492,11 +494,12 @@ def test_run_task_uses_explicit_execution_overrides(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 
     async def fake_run_remote_task(
-        task_obj, *, execution_project, execution_domain, **inputs
+        task_obj, *, execution_project, execution_domain, overwrite_cache=False, **inputs
     ):
         captured["task"] = task_obj
         captured["execution_project"] = execution_project
         captured["execution_domain"] = execution_domain
+        captured["overwrite_cache"] = overwrite_cache
         captured["inputs"] = inputs
         return FakeRun()
 
@@ -525,11 +528,13 @@ def test_run_task_uses_explicit_execution_overrides(monkeypatch) -> None:
             ),
             execution_project="custom-project",
             execution_domain="staging",
+            overwrite_cache=True,
         )
     )
 
     assert captured["execution_project"] == "resolved:custom-project"
     assert captured["execution_domain"] == "resolved:staging"
+    assert captured["overwrite_cache"] is True
     assert payload["run_scope"] == {
         "project": "resolved:custom-project",
         "domain": "resolved:staging",

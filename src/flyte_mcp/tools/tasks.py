@@ -460,6 +460,7 @@ async def run_task(
     execution_project: str | None = None,
     execution_domain: str | None = None,
     wait: bool = False,
+    overwrite_cache: bool = False,
 ) -> dict[str, Any]:
     """
     Run one Flyte task with explicit inputs.
@@ -487,6 +488,9 @@ async def run_task(
         execution domain is used, falling back to the runtime default resolution.
     wait : bool, default=False
         When ``True``, wait for the run to complete and include outputs when available.
+    overwrite_cache : bool, default=False
+        When ``True``, ignore existing cached results and force re-execution of the task.
+        The new results will overwrite any previously cached outputs.
 
     Returns
     -------
@@ -523,6 +527,7 @@ async def run_task(
         lazy_task,
         execution_project=resolved_exec_project,
         execution_domain=resolved_exec_domain,
+        overwrite_cache=overwrite_cache,
         **coerced_inputs,
     )
     payload = {
