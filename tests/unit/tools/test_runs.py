@@ -144,7 +144,7 @@ def test_list_runs_forwards_all_listall_filters(monkeypatch):
             task_name="root_env.task",
             task_version="v123",
             created_by_subject="user-123",
-            sort_by=("updated_at", "asc"),
+            sort_by=["updated_at", "asc"],
             project="other-project",
             domain="development",
             created_at=created_at,
@@ -163,6 +163,53 @@ def test_list_runs_forwards_all_listall_filters(monkeypatch):
         "after": "2025-03-01T00:00:00+00:00",
         "before": "2025-04-01T00:00:00+00:00",
     }
+
+
+def test_list_runs_normalizes_uppercase_sort_direction(monkeypatch):
+    async def fake_details_aio():
+        return SimpleNamespace(
+            action_details=SimpleNamespace(
+                task_name="root_env.task",
+                error_info=None,
+            )
+        )
+
+    fake_run = SimpleNamespace(
+        name="run-11",
+        phase="succeeded",
+        url="https://console/run-11",
+        done=lambda: True,
+        details=SimpleNamespace(aio=fake_details_aio),
+    )
+
+    async def fake_listall(**kwargs):
+        assert kwargs["sort_by"] == ("updated_at", "desc")
+        yield fake_run
+
+    monkeypatch.setattr(
+        run_tools,
+        "get_execution_project",
+        lambda project=None, task=None: "isolated-project",
+    )
+    monkeypatch.setattr(
+        run_tools,
+        "get_execution_domain",
+        lambda domain=None, task=None: "isolated-domain",
+    )
+    monkeypatch.setattr(run_tools.Run, "listall", SimpleNamespace(aio=fake_listall))
+
+    payload = asyncio.run(list_runs(sort_by=["updated_at", "DESC"]))
+
+    assert payload["sort_by"] == ["updated_at", "desc"]
+
+
+def test_list_runs_rejects_invalid_sort_direction():
+    try:
+        run_tools._normalize_sort_by(["updated_at", "newest"])
+    except ValueError as exc:
+        assert str(exc) == "sort_by direction must be 'asc' or 'desc'"
+    else:
+        raise AssertionError("Expected ValueError")
 
 
 def test_get_run_status_returns_phase_payload(monkeypatch):

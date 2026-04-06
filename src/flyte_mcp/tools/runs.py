@@ -1,4 +1,7 @@
-from typing import Any, Literal
+from collections.abc import Sequence
+from typing import Annotated, Any, Literal, cast
+
+from pydantic import Field
 
 from flyte.remote import Run, TimeFilter
 from flyte.remote._run import RunDetails
@@ -7,6 +10,9 @@ from flyteidl2.common import identifier_pb2
 from flyteidl2.workflow import run_definition_pb2
 from flyte_mcp.models import run_status_payload, to_mcp_payload
 from flyte_mcp.runtime import get_execution_domain, get_execution_project
+
+SortDirection = Literal["asc", "desc"]
+SortByParam = Annotated[list[str], Field(min_length=2, max_length=2)]
 
 
 def _normalize_in_phase(
@@ -21,6 +27,21 @@ def _normalize_in_phase(
         if isinstance(phase, str) and phase.strip()
     )
     return normalized or None
+
+
+def _normalize_sort_by(sort_by: Sequence[str] | None) -> tuple[str, SortDirection]:
+    if sort_by is None:
+        return ("created_at", "desc")
+
+    if len(sort_by) != 2:
+        raise ValueError("sort_by must be [field, direction]")
+
+    field, direction = sort_by
+    normalized_direction = direction.strip().lower()
+    if normalized_direction not in {"asc", "desc"}:
+        raise ValueError("sort_by direction must be 'asc' or 'desc'")
+
+    return (field, cast(SortDirection, normalized_direction))
 
 
 async def _get_run(
@@ -71,7 +92,7 @@ async def list_runs(
     task_name: str | None = None,
     task_version: str | None = None,
     created_by_subject: str | None = None,
-    sort_by: tuple[str, Literal["asc", "desc"]] | None = None,
+    sort_by: SortByParam | None = None,
     project: str | None = None,
     domain: str | None = None,
     created_at: TimeFilter | None = None,
@@ -92,8 +113,9 @@ async def list_runs(
         Optional Flyte task version to filter by.
     created_by_subject : str or None, default=None
         Optional creator subject to filter by.
-    sort_by : tuple[str, Literal["asc", "desc"]] or None, default=None
-        Optional sort tuple. Defaults to ``("created_at", "desc")`` when omitted.
+    sort_by : list[str] or None, default=None
+        Optional two-item sort array ``[field, direction]``. Defaults to
+        ``["created_at", "desc"]`` when omitted.
     project : str or None, default=None
         Optional Flyte project override. Falls back to the configured execution
         project when omitted.
@@ -114,7 +136,7 @@ async def list_runs(
     resolved_project = get_execution_project(project)
     resolved_domain = get_execution_domain(domain)
     normalized_in_phase = _normalize_in_phase(in_phase)
-    resolved_sort_by = sort_by or ("created_at", "desc")
+    resolved_sort_by = _normalize_sort_by(sort_by)
     runs: list[dict[str, Any]] = []
 
     async for run in Run.listall.aio(
