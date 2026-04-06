@@ -417,7 +417,12 @@ def test_run_task_executes_and_returns_outputs(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 
     async def fake_run_remote_task(
-        task_obj, *, execution_project, execution_domain, overwrite_cache=False, **inputs
+        task_obj,
+        *,
+        execution_project,
+        execution_domain,
+        overwrite_cache=False,
+        **inputs,
     ):
         captured["task"] = task_obj
         captured["execution_project"] = execution_project
@@ -494,7 +499,12 @@ def test_run_task_uses_explicit_execution_overrides(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 
     async def fake_run_remote_task(
-        task_obj, *, execution_project, execution_domain, overwrite_cache=False, **inputs
+        task_obj,
+        *,
+        execution_project,
+        execution_domain,
+        overwrite_cache=False,
+        **inputs,
     ):
         captured["task"] = task_obj
         captured["execution_project"] = execution_project
