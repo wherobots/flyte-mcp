@@ -43,9 +43,11 @@ async def run_remote_task(
     *,
     execution_project: str | None = None,
     execution_domain: str | None = None,
+    overwrite_cache: bool = False,
     **inputs: Any,
 ) -> Any:
     return await flyte.with_runcontext(
         project=execution_project or get_settings().execution_project,
         domain=execution_domain or get_settings().execution_domain,
+        overwrite_cache=overwrite_cache,
     ).run.aio(task, **inputs)
